@@ -25,7 +25,7 @@ export default function Home() {
   }>({
     messages: [
       {
-        message: 'Hi, what would you like to learn about this legal case?',
+        message: 'Hi，我是你的AI助手，你可以向我提问。',
         type: 'apiMessage',
       },
     ],
@@ -165,8 +165,8 @@ export default function Home() {
                         : styles.usermessage;
                   }
                   return (
-                    <>
-                      <div key={`chatMessage-${index}`} className={className}>
+                    <div key={`chatMessage-${index}`}>
+                      <div className={className}>
                         {icon}
                         <div className={styles.markdownanswer}>
                           <ReactMarkdown linkTarget="_blank">
@@ -204,7 +204,7 @@ export default function Home() {
                           </Accordion>
                         </div>
                       )}
-                    </>
+                    </div>
                   );
                 })}
               </div>
@@ -224,7 +224,7 @@ export default function Home() {
                     placeholder={
                       loading
                         ? 'Waiting for response...'
-                        : 'What is this legal case about?'
+                        : '今年4月国内的CPI指数是多少'
                     }
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}

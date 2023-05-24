@@ -1,9 +1,10 @@
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
-import { PineconeStore } from 'langchain/vectorstores/pinecone';
-import { pinecone } from '@/utils/pinecone-client';
+import { ChromaClient } from 'chromadb'
+import { Chroma } from 'langchain/vectorstores/chroma';
+import { CSVLoader } from 'langchain/document_loaders/fs/csv'
 import { CustomPDFLoader } from '@/utils/customPDFLoader';
-import { PINECONE_INDEX_NAME, PINECONE_NAME_SPACE } from '@/config/pinecone';
+import { CHROMA_NAME_SPACE } from '@/config/chroma';
 import { DirectoryLoader } from 'langchain/document_loaders/fs/directory';
 
 /* Name of directory to retrieve your files from */
@@ -14,6 +15,7 @@ export const run = async () => {
     /*load raw docs from the all files in the directory */
     const directoryLoader = new DirectoryLoader(filePath, {
       '.pdf': (path) => new CustomPDFLoader(path),
+      '.csv': (path) => new CSVLoader(path)
     });
 
     // const loader = new PDFLoader(filePath);
@@ -31,14 +33,21 @@ export const run = async () => {
     console.log('creating vector store...');
     /*create and store the embeddings in the vectorStore*/
     const embeddings = new OpenAIEmbeddings();
-    const index = pinecone.Index(PINECONE_INDEX_NAME); //change to your own index name
+
+    const client = new ChromaClient();
+
+    const collection = await client.getOrCreateCollection({ name: CHROMA_NAME_SPACE })
+    console.log('collection for ', CHROMA_NAME_SPACE, collection)
 
     //embed the PDF documents
-    await PineconeStore.fromDocuments(docs, embeddings, {
-      pineconeIndex: index,
-      namespace: PINECONE_NAME_SPACE,
-      textKey: 'text',
+    const vectorStore = await Chroma.fromDocuments(docs, embeddings, {
+      collectionName: CHROMA_NAME_SPACE,
     });
+
+    const response = await vectorStore.similaritySearch("hello", 1);
+
+    console.log(response);
+
   } catch (error) {
     console.log('error', error);
     throw new Error('Failed to ingest your data');
