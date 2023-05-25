@@ -1,11 +1,11 @@
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
-import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { ChromaClient } from 'chromadb'
 import { Chroma } from 'langchain/vectorstores/chroma';
 import { CSVLoader } from 'langchain/document_loaders/fs/csv'
 import { CustomPDFLoader } from '@/utils/customPDFLoader';
 import { CHROMA_NAME_SPACE } from '@/config/chroma';
 import { DirectoryLoader } from 'langchain/document_loaders/fs/directory';
+import initEmbeddings from "@/utils/embeddings";
 
 /* Name of directory to retrieve your files from */
 const filePath = 'docs';
@@ -31,8 +31,6 @@ export const run = async () => {
     console.log('split docs', docs);
 
     console.log('creating vector store...');
-    /*create and store the embeddings in the vectorStore*/
-    const embeddings = new OpenAIEmbeddings();
 
     const client = new ChromaClient();
 
@@ -40,7 +38,7 @@ export const run = async () => {
     console.log('collection for ', CHROMA_NAME_SPACE, collection)
 
     //embed the PDF documents
-    const vectorStore = await Chroma.fromDocuments(docs, embeddings, {
+    const vectorStore = await Chroma.fromDocuments(docs, initEmbeddings(), {
       collectionName: CHROMA_NAME_SPACE,
     });
 

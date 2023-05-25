@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { Chroma } from 'langchain/vectorstores/chroma';
 import { makeChain } from '@/utils/makechain';
 import { CHROMA_NAME_SPACE } from '@/config/chroma';
+import initEmbeddings from "@/utils/embeddings";
 
 export default async function handler(
   req: NextApiRequest,
@@ -26,7 +26,7 @@ export default async function handler(
 
   try {
     /* create vectorstore*/
-    const vectorStore = new Chroma(new OpenAIEmbeddings({}), { numDimensions: 1536, collectionName: CHROMA_NAME_SPACE })
+    const vectorStore = new Chroma(initEmbeddings(), { numDimensions: 1536, collectionName: CHROMA_NAME_SPACE })
 
     //create chain
     const chain = makeChain(vectorStore);
