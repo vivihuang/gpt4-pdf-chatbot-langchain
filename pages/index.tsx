@@ -91,11 +91,11 @@ export default function Home() {
             ...state.messages,
             {
               type: 'apiMessage',
-              message: data.text,
+              message: data.output,
               sourceDocs: data.sourceDocuments,
             },
           ],
-          history: [...state.history, [question, data.text]],
+          history: [...state.history, [question, data.output]],
         }));
       }
       console.log('messageState', messageState);

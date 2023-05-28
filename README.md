@@ -49,7 +49,7 @@ OPENAI_API_KEY=
 
 4. In the `config` folder, replace the `CHROMA_NAME_SPACE` with a `namespace` where you'd like to store your embeddings on Chroma when you run `npm run ingest`. This namespace will later be used for queries and retrieval.
 
-5. In `utils/makechain.ts` chain change the `QA_PROMPT` for your own usecase. Change `modelName` in `new OpenAI` to `gpt-4`, if you have access to `gpt-4` api. Please verify outside this repo that you have access to `gpt-4` api, otherwise the application will not work.
+5. In `utils/customPDFChain.ts` chain change the `QA_PROMPT` for your own usecase. Change `modelName` in `new OpenAI` to `gpt-4`, if you have access to `gpt-4` api. Please verify outside this repo that you have access to `gpt-4` api, otherwise the application will not work.
 
 ## Convert your PDF files to embeddings
 
