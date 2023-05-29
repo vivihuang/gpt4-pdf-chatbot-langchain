@@ -1,9 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { OpenAI } from 'langchain/llms/openai';
-import { AgentExecutor, ZeroShotAgent } from 'langchain/agents'
-import { LLMChain } from 'langchain/chains'
-import { getTools } from "@/utils/tools";
-import { CustomOutputParser } from "@/utils/outputParser";
+import { getBestTool } from "@/agents/toolAgent";
+import { Tools } from "@/utils/tools";
+import { customPDFChain } from "@/chains/customPDFChain";
+import { customJsonChain } from "@/chains/customJsonChain";
 
 export default async function handler(
 	req: NextApiRequest,
@@ -31,37 +31,18 @@ export default async function handler(
 	const sanitizedQuestion = question.trim().replaceAll('\n', ' ');
 
 	try {
-		const prefix = `你是一个来自中国的AI助手，请用中文回答问题，你可以使用下列工具来进行回答:`;
+		const { tool, toolInput } = await getBestTool(sanitizedQuestion)
 
-		const suffix = `开始，记住必须使用中文回答。
-
-Question: {input}
-Thought:{agent_scratchpad}`;
-
-
-		const createPromptArgs = {
-			prefix,
-			suffix,
-			inputVariables: ["input", "agent_scratchpad"],
-		};
-
-		const tools = getTools()
-
-		const prompt = ZeroShotAgent.createPrompt(tools, createPromptArgs);
-
-		const llmChain = new LLMChain({ llm: model, prompt });
-		const agent = new ZeroShotAgent({
-			llmChain,
-			allowedTools: tools.map(n => n.name),
-			outputParser: new CustomOutputParser()
-		});
-		const agentExecutor = AgentExecutor.fromAgentAndTools({ agent, tools });
-		console.log("Loaded agent.");
-
-		const result = await agentExecutor.call({ input: sanitizedQuestion });
-
-		console.log(`Got output: ${result.output}`);
-		res.status(200).json(result);
+		if (tool == Tools.QA) {
+			const result = await customPDFChain(sanitizedQuestion)
+			console.log('~~~~~~~~~~~~~~QA result', result.text)
+			res.status(200).json(result);
+		}
+		if (tool == Tools.MARKET) {
+			const result = await customJsonChain(sanitizedQuestion)
+			console.log('~~~~~~~~~~~~~~Market result', result.text)
+			res.status(200).json(result);
+		}
 	} catch (error: any) {
 		console.log('error', error);
 		res.status(500).json({ error: error.message || 'Something went wrong' });

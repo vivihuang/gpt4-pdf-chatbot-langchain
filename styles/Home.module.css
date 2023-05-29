@@ -144,6 +144,7 @@
 
 .markdownanswer {
   line-height: 1.75;
+  white-space: pre-wrap;;
 }
 
 .markdownanswer a:hover {

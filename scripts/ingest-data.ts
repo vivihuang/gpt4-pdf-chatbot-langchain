@@ -1,7 +1,6 @@
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { ChromaClient } from 'chromadb'
 import { Chroma } from 'langchain/vectorstores/chroma';
-import { CSVLoader } from 'langchain/document_loaders/fs/csv'
 import { CustomPDFLoader } from '@/utils/customPDFLoader';
 import { CHROMA_NAME_SPACE } from '@/config/chroma';
 import { DirectoryLoader } from 'langchain/document_loaders/fs/directory';
@@ -15,7 +14,6 @@ export const run = async () => {
     /*load raw docs from the all files in the directory */
     const directoryLoader = new DirectoryLoader(filePath, {
       '.pdf': (path) => new CustomPDFLoader(path),
-      '.csv': (path) => new CSVLoader(path)
     });
 
     // const loader = new PDFLoader(filePath);

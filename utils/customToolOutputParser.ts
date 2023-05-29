@@ -1,16 +1,10 @@
 import { AgentActionOutputParser, } from "langchain/agents";
 import { AgentAction, AgentFinish, } from "langchain/schema";
 
-export class CustomOutputParser extends AgentActionOutputParser {
+export class CustomToolOutputParser extends AgentActionOutputParser {
 	async parse(text: string): Promise<AgentAction | AgentFinish> {
-		console.log('~~~~~~~~~~~~~~~~~~~~~CustomOutputParser')
+		console.log('~~~~~~~~~~~~~~~~~~~~~CustomToolOutputParser')
 		console.log(text)
-		if (text.includes("Final Answer:")) {
-			const parts = text.split("Final Answer:");
-			const output = parts[parts.length - 1].trim();
-			const finalAnswers = { output: output };
-			return { log: text, returnValues: finalAnswers };
-		}
 
 		const match = /Action: ([\s\S]*?)(?:\nAction Input: ([\s\S]*?))?$/.exec(
 			text
@@ -20,9 +14,11 @@ export class CustomOutputParser extends AgentActionOutputParser {
 		}
 
 		return {
-			tool: match[1].trim(),
-			toolInput: match[2].trim().replace(/^("+)(.*?)(\1)$/, "$2") ?? "",
 			log: text,
+			returnValues: {
+				tool: match[1].trim(),
+				toolInput: match[2].trim().replace(/^("+)(.*?)(\1)$/, "$2") ?? "",
+			}
 		};
 	}
 
