@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { OpenAI } from 'langchain/llms/openai';
 import { getBestTool } from "@/agents/toolAgent";
 import { Tools } from "@/utils/tools";
 import { customPDFChain } from "@/chains/customPDFChain";
@@ -9,11 +8,6 @@ export default async function handler(
 	req: NextApiRequest,
 	res: NextApiResponse,
 ) {
-	const model = new OpenAI({
-		temperature: 0, // increase temepreature to get more creative answers
-		modelName: 'gpt-3.5-turbo', //change this to gpt-4 if you have access
-	});
-
 	const { question, history } = req.body;
 
 	console.log('question', question);
@@ -31,17 +25,18 @@ export default async function handler(
 	const sanitizedQuestion = question.trim().replaceAll('\n', ' ');
 
 	try {
-		const { tool, toolInput } = await getBestTool(sanitizedQuestion)
+		const tool = await getBestTool(sanitizedQuestion)
 
-		if (tool == Tools.QA) {
+		if (tool == Tools.QA_ECONOMY || tool == Tools.QA_COMMODITY) {
 			const result = await customPDFChain(sanitizedQuestion)
 			console.log('~~~~~~~~~~~~~~QA result', result.text)
 			res.status(200).json(result);
-		}
-		if (tool == Tools.MARKET) {
+		} else if (tool == Tools.MARKET) {
 			const result = await customJsonChain(sanitizedQuestion)
 			console.log('~~~~~~~~~~~~~~Market result', result.text)
 			res.status(200).json(result);
+		} else {
+			res.status(200).json({ text: "暂无合适工具可回答该问题" });
 		}
 	} catch (error: any) {
 		console.log('error', error);

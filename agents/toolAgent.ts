@@ -1,27 +1,28 @@
-import { AgentExecutor, ZeroShotAgent } from 'langchain/agents'
-import { LLMChain } from 'langchain/chains'
+import { PromptTemplate } from "langchain/prompts";
 import { getTools } from "@/utils/tools";
 import { getModel } from "@/utils/model";
-import { CustomToolOutputParser } from "@/utils/customToolOutputParser";
 
-export const getBestTool = async (input: string) => {
+export const getBestTool = async (question: string) => {
 	try {
 		const model = getModel()
 		const tools = getTools()
 
-		const prompt = ZeroShotAgent.createPrompt(tools);
-		const llmChain = new LLMChain({ llm: model, prompt });
-		const agent = new ZeroShotAgent({
-			llmChain,
-			allowedTools: tools.map(n => n.name),
-			outputParser: new CustomToolOutputParser()
+		const toolStrings = tools
+			.map((tool) => `${tool.name}: ${tool.description}`)
+			.join("\n");
+
+		const prompt2 = new PromptTemplate({
+			template:
+				"你是一个钢铁行业的专家，请选择出最适合回答以下问题的工具并回答工具名称，如果找不到请回答none，你可以使用这些工具：\n" +
+				toolStrings +
+				"\n\n问题是: {question}" +
+				"\n我选择的工具名称是: ",
+			inputVariables: ["question"],
 		});
-		const agentExecutor = AgentExecutor.fromAgentAndTools({ agent, tools, maxIterations: 1 });
-		console.log("Loaded agent.");
-
-		const result = await agentExecutor.call({ input: input });
-
-		console.log(`Got tool: ${result.tool}`);
+		const input = await prompt2.format({ question });
+		console.log('Get tool question: ', input)
+		const result = await model.call(input);
+		console.log('Get tool result: ', result)
 		return result
 	} catch (error: any) {
 		console.log('error', error);

@@ -3,11 +3,7 @@ import { PromptTemplate } from "langchain/prompts";
 import { StructuredOutputParser } from "langchain/output_parsers";
 import { getModel } from "@/utils/model";
 import marketData from '@/json/marketData.json'
-
-const getTodayStr = () => {
-	return 'May 9, 2023'
-	// return new Date().toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', });
-}
+import { getTodayStr } from "@/utils/date";
 
 const getMarketDataByFilter = ({
 	dates,
@@ -51,6 +47,8 @@ export const customJsonChain = async (question: string) => {
 				.describe("Data to filter market data")
 		);
 
+		const today = getTodayStr('May 9, 2023')
+
 		const formatInstructions = parser.getFormatInstructions()
 		const prompt1 = new PromptTemplate({
 			template:
@@ -61,7 +59,7 @@ export const customJsonChain = async (question: string) => {
 			partialVariables: { format_instructions: formatInstructions },
 		});
 
-		const input1 = await prompt1.format({ question, today: getTodayStr() });
+		const input1 = await prompt1.format({ question, today });
 		console.log('Get parameters: ', input1)
 
 		const response = await model.call(input1);
@@ -79,7 +77,7 @@ export const customJsonChain = async (question: string) => {
 				"\nThe question is: {question}",
 			inputVariables: ["question", "context", "today"],
 		});
-		const input2 = await prompt2.format({ question, today: getTodayStr(), context: currentMarketData });
+		const input2 = await prompt2.format({ question, today, context: currentMarketData });
 		console.log('Get analysis: ', input2)
 		const finalResult = await model.call(input2);
 		console.log("finalResult", finalResult)
