@@ -4,7 +4,10 @@ import { StructuredOutputParser } from "langchain/output_parsers";
 import { getModel } from "@/utils/model";
 import marketData from '@/json/marketData.json'
 
-const getTodayStr = () => new Date().toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', });
+const getTodayStr = () => {
+	return 'May 9, 2023'
+	// return new Date().toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', });
+}
 
 const getMarketDataByFilter = ({
 	dates,
@@ -30,7 +33,7 @@ const getMarketDataByFilter = ({
 	if (availableAreas?.length) {
 		data = data.filter(d => availableAreas.includes(d.factory_area))
 	}
-	return data && data.length ? data.map(d => `日期: ${d.market_date} 名称: ${d.variety} 产地: ${d.factory_area} 港口: ${d.port} 价格: ${d.price}`) : null
+	return data && data.length ? data.map(d => `日期: ${d.market_date} 名称: ${d.variety} 产地: ${d.factory_area} 港口: ${d.port} 价格: ${d.price} 价差: ${d.change}`) : null
 }
 
 export const customJsonChain = async (question: string) => {
