@@ -6,21 +6,31 @@ import marketData from '@/json/marketData.json'
 
 const getTodayStr = () => new Date().toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric', });
 
-const getMarketDataByFilter = ({ dates, variety_names, ports, factory_areas }: Record<string, string[]>) => {
+const getMarketDataByFilter = ({
+	dates,
+	variety_names,
+	ports,
+	factory_areas }: Record<string, string[]>): string[] | null => {
 	let data = marketData
-	if (dates && dates.length) {
+	if (dates?.length) {
 		data = data.filter(d => dates.includes(d.market_date))
 	}
-	if (variety_names && variety_names.length) {
-		data = data.filter(d => variety_names.includes(d.variety))
+	const allVarieties = marketData.map(d => d.variety)
+	const availableVarieties = variety_names?.length ? variety_names.filter(d => allVarieties.includes(d)) : []
+	if (availableVarieties?.length) {
+		data = data.filter(d => availableVarieties.includes(d.variety))
 	}
-	if (ports && ports.length) {
-		data = data.filter(d => ports.includes(d.port))
+	const allPorts = marketData.map(d => d.port)
+	const availablePorts = ports?.length ? ports.filter(d => allPorts.includes(d)) : []
+	if (availablePorts?.length) {
+		data = data.filter(d => availablePorts.includes(d.port))
 	}
-	if (factory_areas && factory_areas.length) {
-		data = data.filter(d => factory_areas.includes(d.factory_area))
+	const allAreas = marketData.map(d => d.factory_area)
+	const availableAreas = factory_areas?.length ? factory_areas.filter(d => allAreas.includes(d)) : []
+	if (availableAreas?.length) {
+		data = data.filter(d => availableAreas.includes(d.factory_area))
 	}
-	return (data.map(d => `日期: ${d.market_date} 名称: ${d.variety} 产地: ${d.factory_area} 港口: ${d.port} 价格: ${d.price}`)).join('\n')
+	return data && data.length ? data.map(d => `日期: ${d.market_date} 名称: ${d.variety} 产地: ${d.factory_area} 港口: ${d.port} 价格: ${d.price}`) : null
 }
 
 export const customJsonChain = async (question: string) => {
@@ -39,24 +49,38 @@ export const customJsonChain = async (question: string) => {
 		);
 
 		const formatInstructions = parser.getFormatInstructions()
-		const prompt = new PromptTemplate({
+		const prompt1 = new PromptTemplate({
 			template:
-				"Get data from user question to fill in the following JSON schema. If the user ask data for specific date, the answer for dates should be that day. If the use ask data for a period, the the answer for dates should include all dates for that period. The data format is yyyy-mm-dd. Must set today as {today}." +
+				"Get data from user question to fill in the following JSON schema. If the user ask data for a specific date, the answer for dates should be that day. If the use ask data for a period, the the answer for dates should list all daily dates for that period. The data format is yyyy-mm-dd. Must set today as {today}." +
 				"\n{format_instructions}" +
 				"\nThe question is: {question}",
 			inputVariables: ["question", "today"],
 			partialVariables: { format_instructions: formatInstructions },
 		});
 
-		const input = await prompt.format({ question, today: getTodayStr() });
-		console.log(input)
+		const input1 = await prompt1.format({ question, today: getTodayStr() });
+		console.log('Get parameters: ', input1)
 
-		const response = await model.call(input);
+		const response = await model.call(input1);
+		console.log('parameters response: ', response)
 		const parameters = await parser.parse(response)
 
-		const result = getMarketDataByFilter(parameters)
-
-		return { text: result }
+		const currentMarketData = getMarketDataByFilter(parameters)
+		if (!currentMarketData) {
+			return { text: "根据已知信息无法回答该问题" }
+		}
+		const prompt2 = new PromptTemplate({
+			template:
+				"假设今天是{today}, 根据以下信息，简洁和专业的来回答用户的问题" +
+				"\n{context}" +
+				"\nThe question is: {question}",
+			inputVariables: ["question", "context", "today"],
+		});
+		const input2 = await prompt2.format({ question, today: getTodayStr(), context: currentMarketData });
+		console.log('Get analysis: ', input2)
+		const finalResult = await model.call(input2);
+		console.log("finalResult", finalResult)
+		return { text: finalResult }
 	} catch (e) {
 		console.error('json parse error', e)
 		throw e
