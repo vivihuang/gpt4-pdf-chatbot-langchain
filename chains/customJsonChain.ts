@@ -6,10 +6,11 @@ import marketData from '@/json/marketData.json'
 import { getTodayStr } from "@/utils/date";
 
 const getMarketDataByFilter = ({
-	dates,
-	variety_names,
-	ports,
-	factory_areas }: Record<string, string[]>): string[] | null => {
+	                               dates,
+	                               variety_names,
+	                               ports,
+	                               factory_areas
+                               }: Record<string, string[]>): Record<string, any>[] | null => {
 	let data = marketData
 	if (dates?.length) {
 		data = data.filter(d => dates.includes(d.market_date))
@@ -29,7 +30,7 @@ const getMarketDataByFilter = ({
 	if (availableAreas?.length) {
 		data = data.filter(d => availableAreas.includes(d.factory_area))
 	}
-	return data && data.length ? data.map(d => `日期: ${d.market_date} 名称: ${d.variety} 产地: ${d.factory_area} 港口: ${d.port} 价格: ${d.price} 价差: ${d.change}`) : null
+	return data && data.length ? data : null
 }
 
 export const customJsonChain = async (question: string) => {
@@ -77,11 +78,18 @@ export const customJsonChain = async (question: string) => {
 				"\nThe question is: {question}",
 			inputVariables: ["question", "context", "today"],
 		});
-		const input2 = await prompt2.format({ question, today, context: currentMarketData });
+		const dataStr = currentMarketData.map(d => `日期: ${d.market_date} 名称: ${d.variety} 产地: ${d.factory_area} 港口: ${d.port} 价格: ${d.price} 价差: ${d.change}`).join('\n')
+		const input2 = await prompt2.format({ question, today, context: dataStr });
 		console.log('Get analysis: ', input2)
 		const finalResult = await model.call(input2);
 		console.log("finalResult", finalResult)
-		return { text: finalResult }
+		return {
+			text: finalResult, chartData: {
+				title: question,
+				labels: currentMarketData.map(d => d.market_date),
+				data: currentMarketData.map(d => d.price),
+			}
+		}
 	} catch (e) {
 		console.error('json parse error', e)
 		throw e

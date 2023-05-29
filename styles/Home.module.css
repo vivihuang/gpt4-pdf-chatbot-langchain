@@ -18,6 +18,11 @@
   position: relative;
 }
 
+.chart {
+  height: 300px;
+  text-align: center;
+}
+
 .textarea {
   position: relative;
   resize: none;
