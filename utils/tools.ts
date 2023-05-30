@@ -8,7 +8,7 @@ export enum Tools {
 	MARKET = 'market_data',
 	CALCULATOR = 'calculator',
 	SEARCH = 'search',
-
+	WEEKLY_REPORT = 'weekly_report'
 }
 
 export const getTools = () => {
@@ -34,6 +34,12 @@ export const getTools = () => {
 			description:
 				"回答卡粉、PB粉矿、乌克兰精粉的价格问题",
 			func: () => new Promise((resolve) => resolve(Tools.MARKET)),
+		}),
+		new DynamicTool({
+			name: Tools.WEEKLY_REPORT,
+			description:
+				"生成周报",
+			func: () => new Promise((resolve) => resolve(Tools.WEEKLY_REPORT)),
 		}),
 		new SerpAPI(process.env.SERPAPI_API_KEY, {
 			hl: "zh-cn",
