@@ -12,7 +12,7 @@ Chat History:
 Follow Up Input: {question}
 Standalone question:`;
 
-const getQaPrompt = () => `你是一个钢铁行业专家，今天是${getTodayStr()}，根据下面已知信息，简洁和专业的来回答用户的问题。如果无法从中得到答案，请说 “根据已知信息无法回答该问题” 或 “没有提供足够的相关信息”，不允许在答案中添加编造成分，答案请使用中文并使用markdown格式。
+const getQaPrompt = () => `你是一个钢铁行业专家，今天是${getTodayStr()}，根据下面已知信息，简洁和专业的来回答用户的问题。答案请使用中文并使用markdown格式。
 
 {context}
 
@@ -26,6 +26,9 @@ export const customPDFChain = async (question: string) => {
 	const model = getModel()
 	const embeddings = initEmbeddings()
 	const vectorStore = new Chroma(embeddings, { numDimensions: 1536, collectionName: CHROMA_NAME_SPACE })
+
+	// const keywordInput = keywordPrompt + question
+	// const keywords = await model.call(keywordInput);
 
 	const chain = ConversationalRetrievalQAChain.fromLLM(
 		model,

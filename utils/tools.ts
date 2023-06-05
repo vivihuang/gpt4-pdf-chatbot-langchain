@@ -1,5 +1,4 @@
 import { SerpAPI } from "langchain/tools";
-import { Calculator } from "langchain/tools/calculator";
 import { DynamicTool } from "langchain/tools";
 
 export enum Tools {
@@ -16,7 +15,6 @@ export const getTools = () => {
 		console.error('No SERPAPI_API_KEY available. Pls check.')
 	}
 	return [
-		new Calculator(),
 		new DynamicTool({
 			name: Tools.QA_ECONOMY,
 			description:
@@ -26,15 +24,15 @@ export const getTools = () => {
 		new DynamicTool({
 			name: Tools.QA_COMMODITY,
 			description:
-				"回答螺纹钢，铁矿石，热卷钢相关问题",
+				"回答螺纹钢，铁矿石，热卷，热卷钢的相关问题",
 			func: () => new Promise((resolve) => resolve(Tools.QA_COMMODITY)),
 		}),
-		new DynamicTool({
-			name: Tools.MARKET,
-			description:
-				"回答卡粉、PB粉矿、乌克兰精粉的价格问题",
-			func: () => new Promise((resolve) => resolve(Tools.MARKET)),
-		}),
+		// new DynamicTool({
+		// 	name: Tools.MARKET,
+		// 	description:
+		// 		"回答卡粉、PB粉矿、乌克兰精粉的价格问题",
+		// 	func: () => new Promise((resolve) => resolve(Tools.MARKET)),
+		// }),
 		new DynamicTool({
 			name: Tools.WEEKLY_REPORT,
 			description:

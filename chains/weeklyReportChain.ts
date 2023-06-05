@@ -1,4 +1,3 @@
-import { PromptTemplate } from "langchain/prompts";
 import productionData from '@/json/rebar/production.json'
 import outputData from '@/json/rebar/output.json'
 import futuresData from '@/json/rebar/futures.json'
