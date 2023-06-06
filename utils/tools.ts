@@ -27,21 +27,21 @@ export const getTools = () => {
 				"回答螺纹钢，铁矿石，热卷，热卷钢的相关问题",
 			func: () => new Promise((resolve) => resolve(Tools.QA_COMMODITY)),
 		}),
-		// new DynamicTool({
-		// 	name: Tools.MARKET,
-		// 	description:
-		// 		"回答卡粉、PB粉矿、乌克兰精粉的价格问题",
-		// 	func: () => new Promise((resolve) => resolve(Tools.MARKET)),
-		// }),
+		new DynamicTool({
+			name: Tools.MARKET,
+			description:
+				"回答卡粉、PB粉矿、乌克兰精粉的价格问题",
+			func: () => new Promise((resolve) => resolve(Tools.MARKET)),
+		}),
 		new DynamicTool({
 			name: Tools.WEEKLY_REPORT,
 			description:
 				"生成周报",
 			func: () => new Promise((resolve) => resolve(Tools.WEEKLY_REPORT)),
 		}),
-		new SerpAPI(process.env.SERPAPI_API_KEY, {
-			hl: "zh-cn",
-			gl: "cn",
-		}),
+		// new SerpAPI(process.env.SERPAPI_API_KEY, {
+		// 	hl: "zh-cn",
+		// 	gl: "cn",
+		// }),
 	];
 }
