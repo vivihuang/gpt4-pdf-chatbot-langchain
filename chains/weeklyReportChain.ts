@@ -3,26 +3,28 @@ import outputData from '@/json/rebar/output.json'
 import futuresData from '@/json/rebar/futures.json'
 import spotsData from '@/json/rebar/spots.json'
 import turnoverData from '@/json/rebar/turnover.json'
-import stockData from '@/json/rebar/stock.json'
+import areaStock from '@/json/rebar/areaStock.json'
+import allStock from '@/json/rebar/allStock.json'
 import { getModel } from "@/utils/model";
+import { DEMAND_STATUS, MARKET_REVIEW, PRODUCTION_STATUS, STOCK_STATUS } from "@/config/reportTemplate";
 
-const mapArrToStr = (data: Record<string, string | number>[]) => {
+const mapArrToStr = (data: Record<string, string | number | boolean>[]) => {
 	const keys = Object.keys(data[0])
 	return data.map((d) => keys.map(k => `${k}：${d[k]}`).join(' ')).join('\n')
 }
 
 const getTemplates = () => [{
 	title: '行情回顾',
-	prompt: "\n现货数据为：" + `\n${mapArrToStr(spotsData)}` + "\n期货数据为：" + `\n${mapArrToStr(futuresData)}`,
+	prompt: "现货数据：" + mapArrToStr(spotsData) + "\n期货数据：" + `${mapArrToStr(futuresData)}`+ `\n模版：${MARKET_REVIEW}`,
 }, {
 	title: '需求状况',
-	prompt: "\n成交量数据为：" + `\n${mapArrToStr(turnoverData)}`,
+	prompt: "成交量数据：" + mapArrToStr(turnoverData) + `\n模版：${DEMAND_STATUS}` ,
 }, {
 	title: '产量状况',
-	prompt: "\n产量数据为：" + `\n${mapArrToStr(outputData)}` + "\n高炉数据为：" + `\n${mapArrToStr(productionData)}`,
+	prompt: "产量数据：" + mapArrToStr(outputData) + "\n高炉数据：" + mapArrToStr(productionData) + `\n模版：${PRODUCTION_STATUS}` ,
 }, {
 	title: '库存状况',
-	prompt: "\n库存数据为：" + `\n${mapArrToStr(stockData)}`,
+	prompt: "总库存数据：" + mapArrToStr(allStock) + "\n各区域库存数据：" + mapArrToStr(areaStock) + `\n模版：${STOCK_STATUS}`,
 }]
 
 export const weeklyReportChain = async () => {
@@ -31,8 +33,8 @@ export const weeklyReportChain = async () => {
 
 		const templates = getTemplates()
 		const result = await Promise.all(templates.map(async item => {
-			const input = `今天是2023年5月12日，你是一个钢铁行业专家，请简短而专业的总结以下内容，回答采用markdown格式，需包含标题和分析两部分，` +
-				`\n标题：${item.title}，${item.prompt}`
+			const input = `今天是2023年5月12日，周五，上周五是2023年5月5日，你是一个钢铁行业专家，请使用以下数据填入模版中合适的位置来生成本周的周报，回答采用markdown格式，需包含标题和填充后的模版两部分，` +
+				`\n标题：${item.title}\n${item.prompt}`
 			console.log('Report input for ', item.title)
 			return await model.call(input);
 		}))
