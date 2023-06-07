@@ -15,16 +15,16 @@ const mapArrToStr = (data: Record<string, string | number | boolean>[]) => {
 
 const getTemplates = () => [{
 	title: '行情回顾',
-	prompt: "现货数据：" + mapArrToStr(spotsData) + "\n期货数据：" + `${mapArrToStr(futuresData)}`+ `\n模版：${MARKET_REVIEW}`,
+	prompt: "现货数据：" + mapArrToStr(spotsData) + "\n期货数据：" + `${mapArrToStr(futuresData)}`+ `\n模板：${MARKET_REVIEW}`,
 }, {
 	title: '需求状况',
-	prompt: "成交量数据：" + mapArrToStr(turnoverData) + `\n模版：${DEMAND_STATUS}` ,
+	prompt: "成交量数据：" + mapArrToStr(turnoverData) + `\n模板：${DEMAND_STATUS}` ,
 }, {
 	title: '产量状况',
-	prompt: "产量数据：" + mapArrToStr(outputData) + "\n高炉数据：" + mapArrToStr(productionData) + `\n模版：${PRODUCTION_STATUS}` ,
+	prompt: "产量数据：" + mapArrToStr(outputData) + "\n高炉数据：" + mapArrToStr(productionData) + `\n模板：${PRODUCTION_STATUS}` ,
 }, {
 	title: '库存状况',
-	prompt: "总库存数据：" + mapArrToStr(allStock) + "\n各区域库存数据：" + mapArrToStr(areaStock) + `\n模版：${STOCK_STATUS}`,
+	prompt: "总库存数据：" + mapArrToStr(allStock) + "\n各区域库存数据：" + mapArrToStr(areaStock) + `\n模板：${STOCK_STATUS}`,
 }]
 
 export const weeklyReportChain = async () => {
@@ -33,7 +33,7 @@ export const weeklyReportChain = async () => {
 
 		const templates = getTemplates()
 		const result = await Promise.all(templates.map(async item => {
-			const input = `今天是2023年5月12日，周五，上周五是2023年5月5日，你是一个钢铁行业专家，请使用以下数据填入模版中合适的位置来生成本周的周报，回答采用markdown格式，需包含标题和填充后的模版两部分，` +
+			const input = `今天是2023年5月12日，周五，上周五是2023年5月5日，你是一个钢铁行业专家，请使用以下数据填入模板中合适的位置来生成本周的周报，回答采用markdown格式，需包含标题和填充后的模板两部分，` +
 				`\n标题：${item.title}\n${item.prompt}`
 			console.log('Report input for ', item.title)
 			return await model.call(input);
