@@ -1,10 +1,11 @@
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
-import { ChromaClient } from 'chromadb'
-import { Chroma } from 'langchain/vectorstores/chroma';
+import { OpenSearchVectorStore } from 'langchain/vectorstores/opensearch';
+import { Document } from 'langchain/document'
 import { CustomPDFLoader } from '@/utils/customPDFLoader';
-import { CHROMA_NAME_SPACE } from '@/config/chroma';
 import { DirectoryLoader } from 'langchain/document_loaders/fs/directory';
 import initEmbeddings from "@/utils/embeddings";
+import initOpenSearchClient from "@/utils/openSearchClient";
+import { VECTOR_DB_NAME_SPACE } from "@/config/vectorDB";
 
 /* Name of directory to retrieve your files from */
 const filePath = 'docs';
@@ -26,21 +27,28 @@ export const run = async () => {
 		});
 
 		const docs = await textSplitter.splitDocuments(rawDocs);
+		const formatDocs: Document[] = docs.map(item => ({
+			pageContent: item.pageContent, metadata: {
+				source: item.metadata.source,
+				pdfTotalPages: item.metadata.pdf_numpages,
+				linesFrom: item.metadata.loc.lines.from,
+				linesTo: item.metadata.loc.lines.from,
+			}
+		}))
 		console.log('split docs');
 
+		console.log('init client');
+
+		const client = initOpenSearchClient()
 		console.log('creating vector store...');
 
-		const client = new ChromaClient();
-
-		const collection = await client.getOrCreateCollection({ name: CHROMA_NAME_SPACE })
-		console.log('collection for ', CHROMA_NAME_SPACE, collection)
-
-		//embed the PDF documents
-		const vectorStore = await Chroma.fromDocuments(docs, initEmbeddings(), {
-			collectionName: CHROMA_NAME_SPACE,
+		// embed the PDF documents
+		const vectorStore = await OpenSearchVectorStore.fromDocuments(formatDocs, initEmbeddings(), {
+			client,
+			indexName: VECTOR_DB_NAME_SPACE,
 		});
 
-		const response = await vectorStore.similaritySearch("hello", 1);
+		const response = await vectorStore.similaritySearch("PMI", 1);
 		console.log(response);
 	} catch (error) {
 		// @ts-ignore

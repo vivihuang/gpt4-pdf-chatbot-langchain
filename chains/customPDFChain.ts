@@ -1,9 +1,10 @@
 import { ConversationalRetrievalQAChain } from 'langchain/chains';
-import { Chroma } from "langchain/vectorstores/chroma";
+import { OpenSearchVectorStore } from "langchain/vectorstores/opensearch";
 import initEmbeddings from "@/utils/embeddings";
-import { CHROMA_NAME_SPACE } from "@/config/chroma";
+import { VECTOR_DB_NAME_SPACE } from "@/config/vectorDB";
 import { getModel } from "@/utils/model";
 import { getTodayStr } from "@/utils/date";
+import initOpenSearchClient from "@/utils/openSearchClient";
 
 const CONDENSE_PROMPT = `根据以下对话和输入问题，将输入问题改写为一个独立问题。
 
@@ -25,7 +26,12 @@ export const customPDFChain = async (question: string) => {
 	console.log('Start Q&A from docs for question : ', question)
 	const model = getModel()
 	const embeddings = initEmbeddings()
-	const vectorStore = new Chroma(embeddings, { numDimensions: 1536, collectionName: CHROMA_NAME_SPACE })
+	const client = initOpenSearchClient()
+	const vectorStore = new OpenSearchVectorStore(embeddings, { client, indexName: VECTOR_DB_NAME_SPACE })
+
+	const results = await vectorStore.similaritySearch("当前热卷钢的库存和消费量分别是多少", 4);
+
+	console.log(results)
 
 	// const keywordInput = keywordPrompt + question
 	// const keywords = await model.call(keywordInput);
